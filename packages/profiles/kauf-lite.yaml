@@ -1,0 +1,125 @@
+# Kauf Lite profile — extends stock-lite with kauf-specific additions:
+
+substitutions:
+  project_ver_let: l
+  sub_hlw_timeout: 3s
+  sub_early_publish_percent:           "25"
+  sub_early_publish_percent_min_power: "0.5"
+  sub_early_publish_absolute:          "16.68" # for PLF10, 1w is approximately 5.56.  16.68 is approximately 3w.
+
+  # KAUF deprecated substitutions
+  sub_web_server_product: plug
+  sub_reboot_timeout:    "__KAUF_DEPRECATED_SENTINEL__"  # deprecated; see https://github.com/KaufHA/common/blob/main/DEPRECATED_SUBSTITUTIONS.md#sub_reboot_timeout
+  default_button_config: "__KAUF_DEPRECATED_SENTINEL__"  # deprecated; see https://github.com/KaufHA/common/blob/main/DEPRECATED_SUBSTITUTIONS.md#default_button_config
+  disable_webserver:     "__KAUF_DEPRECATED_SENTINEL__"  # deprecated; see https://github.com/KaufHA/common/blob/main/DEPRECATED_SUBSTITUTIONS.md#disable_webserver
+
+
+packages:
+  stock: !include stock-lite.yaml
+  Kauf.Common: !include ../common-source/${component_source}.yaml
+
+
+kauf_deprecations:
+  sub_reboot_timeout:    $sub_reboot_timeout
+  default_button_config: $default_button_config
+  disable_webserver:     $disable_webserver
+
+
+wifi:
+  forced_addr: 8
+
+
+# https://esphome.io/components/web_server.html
+web_server:
+  js_url: https://kaufha.com/v2/www.js
+  product: $sub_web_server_product
+
+
+switch:
+  - id: !extend relay
+    forced_hash: 41191675
+    forced_addr: 2
+
+  - id: !extend blue_led
+    forced_hash: 1329407616
+    forced_addr: 44
+
+  - id: !extend red_led
+    forced_hash: 261191305
+    forced_addr: 48
+
+  - platform: template
+    id: switch_early_publish
+    name: Early Publish
+    optimistic: true
+    entity_category: config
+    disabled_by_default: $disable_entities
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - lambda: |-
+          #if defined(USE_KAUF_HLW8012)
+            id(hlw_main).enable_early_publish();
+          #endif
+    on_turn_off:
+      - lambda: |-
+          #if defined(USE_KAUF_HLW8012)
+            id(hlw_main).disable_early_publish();
+          #endif
+    forced_hash: 1334841796
+    forced_addr: 62
+
+sensor:
+  - id: !extend tde
+    forced_hash: 1903527169
+    forced_addr: 6
+
+
+number:
+  - id: !extend blue_led_brightness
+    forced_hash: 2635887862
+    forced_addr: 46
+
+  - id: !extend red_led_brightness
+    forced_hash: 4192312897
+    forced_addr: 50
+
+  - id: !extend scale_power
+    forced_hash: 3565176138
+    forced_addr: 56
+
+  - id: !extend scale_current
+    forced_hash: 2293595686
+    forced_addr: 58
+
+  - id: !extend scale_voltage
+    forced_hash: 254525215
+    forced_addr: 60
+
+select:
+  - id: !extend select_button
+    forced_hash: 3616613943
+    forced_addr: 34
+
+  - id: !extend select_bled
+    forced_hash: 3104663617
+    forced_addr: 36
+
+  - id: !extend select_rled
+    forced_hash: 261191305
+    forced_addr: 38
+
+# Current reserved flash memory:
+# 02-03: Relay output
+# 06-07: Total Daily Energy
+# 08-33: Wi-Fi Credentials
+# 34-35: Button Config select entity
+# 36-37: Blue LED select entity
+# 38-39: Red LED select entity
+# 44-45: Blue LED
+# 46-47: Blue LED Brightness
+# 48-49: Red LED
+# 50-51: Red LED Brightness
+# 56-57: Scale Power
+# 58-59: Scale Current
+# 60-61: Scale Voltage
+# 62-63: Early Publish Switch

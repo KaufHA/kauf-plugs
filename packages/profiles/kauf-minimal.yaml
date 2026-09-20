@@ -1,0 +1,39 @@
+# Kauf  minimal profile — extends stock-minimal with kauf-specific additions:
+
+substitutions:
+  project_ver_let: m
+  sub_hlw_timeout: 3s
+  sub_early_publish_percent:           "25"
+  sub_early_publish_percent_min_power: "0.5"
+  sub_early_publish_absolute:          "16.68" # for PLF10, 1w is approximately 5.56.  16.68 is approximately 3w.
+
+  # KAUF deprecated substitutions
+  sub_web_server_product: plug
+  sub_reboot_timeout:    "__KAUF_DEPRECATED_SENTINEL__"  # deprecated; see https://github.com/KaufHA/common/blob/main/DEPRECATED_SUBSTITUTIONS.md#sub_reboot_timeout
+  default_button_config: "__KAUF_DEPRECATED_SENTINEL__"  # deprecated; see https://github.com/KaufHA/common/blob/main/DEPRECATED_SUBSTITUTIONS.md#default_button_config
+  disable_webserver:     "__KAUF_DEPRECATED_SENTINEL__"  # deprecated; see https://github.com/KaufHA/common/blob/main/DEPRECATED_SUBSTITUTIONS.md#disable_webserver
+
+
+packages:
+  stock: !include stock-minimal.yaml
+  Kauf.Common: !include ../common-source/${component_source}.yaml
+
+
+kauf_deprecations:
+  sub_reboot_timeout:    $sub_reboot_timeout
+  default_button_config: $default_button_config
+  disable_webserver:     $disable_webserver
+
+
+wifi:
+  forced_addr: 8
+
+
+switch:
+  - id: !extend relay
+    forced_hash: 41191675
+    forced_addr: 2
+
+
+# Current reserved flash memory:
+# 00-01: Relay output

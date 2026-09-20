@@ -1,0 +1,44 @@
+platform: hlw8012
+id: hlw_main
+sel_pin:
+  number: $sub_pm_sel_pin
+  inverted: true
+cf_pin: $sub_pm_cf_pin
+cf1_pin: $sub_pm_cf1_pin
+current_resistor: $current_resistor_val
+voltage_divider: $voltage_divider_val
+
+change_mode_every: $sub_change_mode_every
+update_interval: $sub_update_interval
+initial_mode: $sub_initial_mode
+model: $sub_hlw_model
+
+power:
+  name: Power
+  unit_of_measurement: W
+  state_class: measurement
+  id: wattage
+  filters:
+    - calibrate_linear:
+        - $power_cal_val1_in -> $power_cal_val1_out
+        - $power_cal_val2_in -> $power_cal_val2_out
+
+current:
+  name: Current
+  unit_of_measurement: A
+  state_class: measurement
+  id: current
+  filters:
+    - calibrate_linear:
+        - $current_cal_val1_in -> $current_cal_val1_out
+        - $current_cal_val2_in -> $current_cal_val2_out
+
+voltage:
+  name: Voltage
+  unit_of_measurement: V
+  state_class: measurement
+  id: voltage
+  filters:
+    - calibrate_linear:
+        - $voltage_cal_val1_in -> $voltage_cal_val1_out
+        - $voltage_cal_val2_in -> $voltage_cal_val2_out

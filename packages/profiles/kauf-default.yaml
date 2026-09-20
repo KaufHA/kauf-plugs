@@ -1,0 +1,40 @@
+# Kauf Default profile: Kauf Lite plus shared Plus/default behavior.
+
+packages:
+  Kauf.Lite: !include kauf-lite.yaml
+  Default.Additions: !include default-additions.yaml
+
+
+# Stable flash-layout metadata for persistent entities added by Default.Additions.
+switch:
+  - id: !extend switch_no_hass
+    forced_hash: 657159011
+    forced_addr: 42
+
+
+number:
+  - id: !extend number_debounce
+    forced_hash: 2232959069
+    forced_addr: 40
+
+  - id: !extend threshold
+    forced_hash: 3932521563
+    forced_addr: 4
+
+
+select:
+  - id: !extend select_monitor_interval
+    forced_hash: 1025003091
+    forced_addr: 0
+
+  - id: !extend select_boot_state
+    forced_hash: 2390278151
+    forced_addr: 74
+
+
+# Additional reserved flash memory used by the Default profile:
+# 00-01: Power Monitoring Interval
+# 04-05: Use Threshold
+# 40-41: Debounce number entity
+# 42-43: No HASS switch
+# 74-75: Boot State select entity

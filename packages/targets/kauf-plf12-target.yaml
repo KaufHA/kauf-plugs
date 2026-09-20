@@ -1,0 +1,7 @@
+# this file defines kauf-specific overrides for PLF12.
+
+packages:
+  common_target: !include plf12-common.yaml
+
+esp8266:
+  start_free: 76

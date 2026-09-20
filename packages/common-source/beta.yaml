@@ -1,0 +1,6 @@
+# Latest KaufHA/common from the default branch (no pinned tag).
+external_components:
+  - source:
+      type: git
+      url: https://github.com/KaufHA/common
+    refresh: 1h

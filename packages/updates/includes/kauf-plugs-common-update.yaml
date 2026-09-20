@@ -1,0 +1,15 @@
+substitutions:
+  project_ver_let: u
+
+esphome:
+  name_add_mac_suffix: true
+
+wifi:
+  forced_hash: 1432266978
+
+web_server:
+  local: true
+
+select:
+  - id: !extend select_button
+    initial_option: Toggle on Release

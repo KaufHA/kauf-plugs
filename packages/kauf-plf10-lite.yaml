@@ -1,0 +1,6 @@
+# Convenience entrypoint for the Kauf Lite profile on PLF10 hardware.
+substitutions:
+  profile: lite
+
+packages:
+  Kauf.PLF10: !include kauf-plf10.yaml

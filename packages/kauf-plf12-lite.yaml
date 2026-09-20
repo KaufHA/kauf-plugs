@@ -1,0 +1,6 @@
+# Convenience entrypoint for the Kauf Lite profile on PLF12 hardware.
+substitutions:
+  profile: lite
+
+packages:
+  Kauf.PLF12: !include kauf-plf12.yaml

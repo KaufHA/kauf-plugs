@@ -1,0 +1,9 @@
+# Default PLF12 entrypoint (kauf profile + plf12 target).
+substitutions:
+  component_family: kauf
+  component_source: release
+  profile:          default
+
+packages:
+  Kauf.Profile: !include profiles/${component_family}-${profile}.yaml
+  Kauf.Target:  !include targets/${component_family}-plf12-target.yaml

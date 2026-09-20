@@ -1,0 +1,8 @@
+# Full/Plus stock profile: Lite baseline plus configurable setting entities.
+
+substitutions:
+  project_ver_let: z
+
+packages:
+  Stock.Lite: !include stock-lite.yaml
+  Default.Additions: !include default-additions.yaml

@@ -1,0 +1,8 @@
+# this file defines explicit target defaults for PLF12.
+
+packages:
+  common_target: !include plf12-common.yaml
+
+substitutions:
+  sub_change_mode_every: "1"
+  sub_initial_mode: CURRENT

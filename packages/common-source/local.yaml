@@ -1,0 +1,5 @@
+# Local checkout of KaufHA/common, for component development.
+external_components:
+  - source:
+      type: local
+      path: ../../../common/components
