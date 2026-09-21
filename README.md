@@ -1,32 +1,25 @@
 # kauf-plugs
 
-Unified ESPHome package repo for KAUF smart plugs (PLF10 and PLF12).
+Unified ESPHome package repo for KAUF smart plugs.
 
 The recommended way to import a plug into your ESPHome dashboard is through the dashboard import feature. The plug should show up in the ESPHome dashboard as being available to adopt. Below is the minimum necessary yaml, which can be used to manually add your device instead. Change the `name` and `friendly_name` substitutions to fit your use case. Adding a [`use_address:`](https://esphome.io/components/wifi.html?highlight=use_address#configuration-variables) under `wifi:` will allow you to point the ESPHome dashboard to the device on your network for flashing OTA.
 
-The `friendly_name` substitution is recommended and will not be automatically created by the ESPHome dashboard import. If you use the ESPHome dashboard import feature, we recommend that you add a `friendly_name` substitution to rename all of the entities in Home Assistant in one line of yaml.
-
-## Current Products
-
-- Current sold model: **PLF12** — manual: [`PLF12 Manual.pdf`](./PLF12%20Manual.pdf)
-- **PLF10** — earlier hardware revision, still supported here. (Manual not yet copied into this repo; see [`KaufHA/PLF10`](https://github.com/KaufHA/PLF10).)
 
 ## Quick Start
 
 ```yaml
 substitutions:
-  name: bed-plug
-  friendly_name: Bed Plug
-  component_family: kauf      # kauf | stock
-  component_source: release   # release | beta | local (kauf only)
-  profile: default            # minimal | lite | default
+  name: bedroom-lamp
+  friendly_name: Bedroom Lamp
 
 packages:
-  Kauf.Plug: github://KaufHA/kauf-plugs/packages/kauf-plf12.yaml
+  Kauf.Plug: github://KaufHA/kauf-plugs/packages/kauf-plf12.yaml    # comment this line for PLF10
+  # Kauf.Plug: github://KaufHA/kauf-plugs/packages/kauf-plf10.yaml  # uncomment this line for PLF10
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  # use_address: 192.168.1.214  # example use_address key. Uncomment if needed.
 ```
 
 ## Entrypoints
@@ -42,14 +35,7 @@ Each hardware-specific entrypoint declares `component_family`/`component_source`
 - `profiles/${component_family}-${profile}.yaml`
 - `targets/${component_family}-<model>-target.yaml`
 
-## Package Layout
 
-- `packages/profiles/`: `stock-lite.yaml` is the concrete baseline. Both Default profiles inherit their corresponding Lite profile and add the shared Plus setting entities from `default-additions.yaml`; `kauf-default.yaml` also stamps the additional persistent entities. `minimal` remains a separate stripped-down profile.
-- `packages/targets/`: hardware/model overrides, split into `${component_family}-<model>-target.yaml` (family-specific board tweaks such as `start_free`) and `<model>-common.yaml` (shared pins, calibration, and board configuration)
-- `packages/power/`: two power-monitoring backends: ESPHome's stock `hlw8012` implementation and Kauf's `kauf_hlw8012` implementation. Profile-specific scaling and threshold behavior lives in the profile layer.
-- `packages/common-source/`: selects the `release`, `beta`, or `local` build of [`KaufHA/common`](https://github.com/KaufHA/common) for the Kauf component family. Stock does not load external components.
-- `packages/shared/`: cross-cutting includes (e.g. versioning)
-- `packages/updates/`: Yaml files used to build OTA update and factory-test binaries. Generally not useful to end users.
 
 ## Include Tree
 
@@ -70,11 +56,6 @@ kauf-plf12.yaml                              (family=kauf, source=release, profi
     └─ common_target → targets/plf12-common.yaml (GPIO pins, calibration, board)
 ```
 
-Three things worth knowing when reading this:
-
-- **`component_family` and `profile` pick which profile and target files load** through `${component_family}-${profile}` and `${component_family}-<model>-target` path interpolation. The stock family swaps the Kauf layers for stock ESPHome implementations.
-- **`component_source` only selects where the Kauf external components come from**: a pinned release, the latest default branch, or a sibling local checkout. It does not require duplicate profile or target files.
-- **Each concrete stock profile includes the family-selected power sensor definition** (`kauf-hlw8012.yaml` or `stock-hlw8012.yaml`). Targets supply the model-specific pins and calibration values.
 
 ## Profile Options
 
@@ -84,7 +65,7 @@ Available for both `kauf` and `stock` component families. `minimal`, `lite`, and
 - **`lite`** — Former base/default behavior. Keeps the full control, power-monitoring, and diagnostic entity set, but omits the Plus setting entities (No HASS, Debounce Time, Use Threshold, Monitoring Update Interval, Boot State, and Button Press Duration). Debounce, threshold, monitoring interval, and boot behavior are configured directly through YAML substitutions.
 - **`default`** — Full functionality: controllable/dimmable Blue and Red LED entities with automation options, Early Publish, power-monitoring scaling entities, button configuration, debounce/threshold/reboot-behavior configuration entities, and diagnostics (Restart Firmware, IP Address, Uptime, Button Press Duration).
 
-The old `plus` behavior is now the `default` profile, while the old base/default behavior is available as `lite`. The old `update` and `factory` variants used to build OTA-update and factory-flash binaries have not been ported into this package structure yet.
+The old `plus` behavior is now the `default` profile, while the old base/default behavior is available as `lite`.
 
 Lite can also be selected with a single package include by using the matching hardware convenience entrypoint:
 
@@ -174,7 +155,7 @@ You can configure the following aspects by adding substitutions to your own yaml
 
 ***component_source*** — Selects where the `kauf` family loads [`KaufHA/common`](https://github.com/KaufHA/common) from. Defaults to `release` and is ignored by the `stock` family.
 - `release` — The pinned release declared in `packages/shared/kauf-versioning.yaml`.
-- `beta` — The latest commit on the repository's default branch, refreshed hourly.
+- `beta` — The latest commit on the repository's default branch.
 - `local` — A sibling local checkout for component development. Expects `KaufHA/common` next to this repository.
 
 ***profile*** — Selects which profile to use. See [Profile Options](#profile-options).
@@ -215,33 +196,17 @@ You can configure the following aspects by adding substitutions to your own yaml
 
 ### Wi-Fi networks
 
-Multiple Wi-Fi networks can be configured with the [`networks:`](https://esphome.io/components/wifi.html#connecting-to-multiple-networks) key under `wifi:`. By default, the configured `networks:` will be added in addition to the default `initial_ap` network. If you set your SSID/password without the `networks:` key, that automatically replaces the default `initial_ap` network.
-
-With the `kauf` component family, the Kauf Wi-Fi component also supports `only_networks: true` under `wifi:`. This discards the packaged `initial_ap` network and uses only the entries supplied under `networks:`. This option is not available with the `stock` component family. `fast_connect` defaults to disabled and does not need to be explicitly disabled for multiple networks.
+Multiple Wi-Fi networks can be configured with the [`networks:`](https://esphome.io/components/wifi.html#connecting-to-multiple-networks) key under `wifi:`. With `kauf` components, the configured `networks:` will be added in addition to the default `initial_ap` network. If you set your SSID/password without the `networks:` key, that automatically replaces the default `initial_ap` network.  With the `kauf` component family, the Kauf Wi-Fi component also supports `only_networks: true` under `wifi:`. This discards the packaged `initial_ap` network and uses only the entries supplied under `networks:`. The `stock` component family will always discard the base ssid if the `networks:` key is used.
 
 ## Factory Reset (`kauf` family only)
 
-With the `kauf` component family, going to the plug's URL in a web browser and adding `/reset` will completely wipe all settings from flash memory. Note that this will wipe the plug's memory of whether the relay was on or off, and therefore the plug may turn off. This custom endpoint is not available with the `stock` component family.
+With the `kauf` component family, going to the plug's URL in a web browser and adding `/reset` will completely wipe all settings from flash memory. Note that this will wipe the plug's memory of whether the relay was on or off, and therefore the plug may toggle. This custom endpoint is not available with the `stock` component family.
 
 ## Clearing Wi-Fi Credentials, Getting Wi-Fi AP to Reconfigure Credentials
 
 In the `lite` and `default` profiles, holding the plug's button for 30 seconds will clear any programmed Wi-Fi credentials, including credentials hard-coded in YAML, and cause the plug to put its Wi-Fi AP back up. With the `kauf` component family, going to the plug's URL in a web browser and adding `/clear` will do the same thing. The `/clear` endpoint is not available with the `stock` component family. No other settings or data will be lost.
 
 ## Troubleshooting
-
-### Binary Size Error
-
-ESPHome added API encryption by default, which can make plug binary files too big to OTA update. If you get the message `ERROR Error binary size: Error: ESP does not have enough space to store OTA file.`, we recommend that you remove API encryption by commenting out or deleting the following lines:
-
-```yaml
-# api:
-#   encryption:
-#     key: ...
-```
-
-If you want to keep API encryption, you can flash first with the `minimal` profile each time you need to update or upgrade, and then revert back to your desired profile.
-
-### Additional Troubleshooting
 
 General troubleshooting ideas applicable to all products are located in the [Common repo's readme](https://github.com/KaufHA/common/blob/main/README.md#troubleshooting).
 
@@ -261,15 +226,8 @@ General troubleshooting ideas applicable to all products are located in the [Com
 
 This page explains how to use the template if you need help: https://templates.blakadder.com/howto.html
 
-## Notes
-
-- Targets select model-specific pins/calibration/product metadata via `<model>-common.yaml`. See [Include Tree](#include-tree) for the full resolution path, including how the power backend is selected.
-- PLF10 and PLF12 source repos were not modified.
 
 ## Links
 
 - [Purchase PLF12 plugs on Amazon](https://www.amazon.com/dp/B0BJLGNPPX)
-- [Purchase PLF10 plugs on Amazon](https://www.amazon.com/dp/B09JQ3LRHB)
 - [KAUF YouTube Channel](https://www.youtube.com/channel/UCjgziIA-lXmcqcMIm8HDnYg)
-- [KaufHA Website (PLF12)](https://kaufha.com/plf12)
-- [KaufHA Website (PLF10)](https://kaufha.com/plf10)
