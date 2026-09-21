@@ -2,4 +2,4 @@
 external_components:
   - source:
       type: local
-      path: ../../../common/components
+      path: ../../common/components
