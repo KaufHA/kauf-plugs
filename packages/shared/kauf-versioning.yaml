@@ -1,5 +1,5 @@
 substitutions:
   # Shared release/version knobs used across shared profiles and both component families.
-  project_ver_num: "2.13"
+  project_ver_num: "2.131"
   sub_min_version: 2026.9.0
-  sub_common_ref: v2026.9.0
+  sub_common_ref: v2026.9.21
