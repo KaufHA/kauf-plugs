@@ -40,6 +40,7 @@ substitutions:
   current_resistor_val: "0.001"
   voltage_divider_val:  "2401"
   sub_hlw_model:         HLW8012
+  sub_pm_chip:           hlw8012      # selects power/${component_family}-${sub_pm_chip}.yaml
   power_cal_val1_in:    "0.0"
   power_cal_val1_out:   "0.0"
   power_cal_val2_in:    "333.8"
@@ -74,6 +75,9 @@ substitutions:
   sub_blue_led_pin: GPIO2
   sub_red_led_pin:  GPIO0
   sub_relay_pin:    GPIO4
+
+  # output platform used for the LED PWM outputs
+  sub_led_pwm_platform: esp8266_pwm
 
   # debounce specifications
   sub_default_debounce: "100"
@@ -320,13 +324,13 @@ script:
 
 # PWM outputs for the blue/red LEDs.
 output:
-  - platform: esp8266_pwm
+  - platform: $sub_led_pwm_platform
     id: blue_led_pwm
     frequency: 200 Hz
     pin: $sub_blue_led_pin
     inverted: true
 
-  - platform: esp8266_pwm
+  - platform: $sub_led_pwm_platform
     id: red_led_pwm
     frequency: 200 Hz
     pin: $sub_red_led_pin
@@ -396,7 +400,7 @@ time:
 # https://esphome.io/components/sensor/index.html
 sensor:   # Power monitoring sensors output to Home Assistant
 
-  - !include ../power/${component_family}-hlw8012.yaml
+  - !include ../power/${component_family}-${sub_pm_chip}.yaml
 
     # Add configurable scaling and threshold behavior to the power sensors
     # supplied by the selected Kauf or stock backend.

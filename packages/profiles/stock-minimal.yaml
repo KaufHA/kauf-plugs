@@ -15,6 +15,7 @@ substitutions:
 
 
   # universal HLW8012 behavior defaults
+  sub_pm_chip:          hlw8012      # selects power/${component_family}-${sub_pm_chip}.yaml
   current_resistor_val: "0.001"
   power_cal_val1_in:    "0.0"
   power_cal_val1_out:   "0.0"
@@ -131,7 +132,7 @@ switch:
     restore_mode: RESTORE_DEFAULT_ON
 
 sensor:
-  - !include ../power/${component_family}-hlw8012.yaml
+  - !include ../power/${component_family}-${sub_pm_chip}.yaml
 
     # reports total power so far each day, resets at midnight
     # https://esphome.io/components/sensor/total_daily_energy.html

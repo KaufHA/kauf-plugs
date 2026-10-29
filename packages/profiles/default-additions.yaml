@@ -125,11 +125,14 @@ select:
           else if ( x == "5s"  ) { interval_ms = 5000; }
           else if ( x == "2s"  ) { interval_ms = 2000; }
 
-          if (interval_ms > 0) {
-          #if defined(USE_HLW8012) || defined(USE_KAUF_HLW8012)
-            id(hlw_main).set_update_interval(interval_ms);
-          #endif
-          }
+          // only polling power monitors (hlw8012, kauf_hlw8012) have an update interval
+          // generic lambda so the discarded branch isn't compiled for non-polling components.
+          auto set_pm_interval = [](auto *pm, uint32_t ms) {
+            if constexpr (std::is_base_of_v<PollingComponent, std::remove_pointer_t<decltype(pm)>>) {
+              pm->set_update_interval(ms);
+            }
+          };
+          if (interval_ms > 0) { set_pm_interval(id(hlw_main), interval_ms); }
 
   - platform: template
     name: Boot State
@@ -160,6 +163,12 @@ select:
 
           // republish state so it gets saved if necessary
           // but make sure relay already set up, don't want to publish here on boot
-          if ( id(relay).is_ready() ) id(relay).publish_state(id(relay).state, true);
+          // force_save only exists in the kauf switch component; stock dedups same-state publishes, so it saves on the next toggle instead.
+          auto force_republish = [](auto *sw) {
+            if constexpr (requires { sw->publish_state(true, true); }) {
+              sw->publish_state(sw->state, true);
+            }
+          };
+          if ( id(relay).is_ready() ) force_republish(id(relay));
 
       - script.execute: script_save_changes
